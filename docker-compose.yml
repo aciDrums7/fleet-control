@@ -8,12 +8,12 @@ services:
       retries: 5
 
   database:
-    image: mysql:8.0-oracle
+    image: mysql:8.0
     ports:
       - "3306:3306"
     volumes:
       - "./docker/database/:/docker-entrypoint-initdb.d/"
-      - "./docker/database/mysql:/var/lib/mysql"
+      - fleetbase_db_data:/var/lib/mysql
     environment:
       MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
       MYSQL_DATABASE: "fleetbase"
@@ -30,6 +30,7 @@ services:
     environment:
       SOCKETCLUSTER_WORKERS: 10
       SOCKETCLUSTER_BROKERS: 10
+    platform: linux/amd64
 
   scheduler:
     image: fleetbase/fleetbase-api:latest
@@ -41,6 +42,7 @@ services:
       CACHE_PATH: /fleetbase/api/storage/framework/cache
       CACHE_URL: tcp://cache
       REDIS_URL: tcp://cache
+    platform: linux/amd64
 
   queue:
     image: fleetbase/fleetbase-api:latest
@@ -57,6 +59,7 @@ services:
       CACHE_PATH: /fleetbase/api/storage/framework/cache
       CACHE_URL: tcp://cache
       REDIS_URL: tcp://cache
+    platform: linux/amd64
 
   console:
     image: fleetbase/fleetbase-console:latest
@@ -64,13 +67,14 @@ services:
       - "4200:4200"
     volumes:
       - ./console/fleetbase.config.json:/usr/share/nginx/html/fleetbase.config.json
+    platform: linux/amd64
 
   application:
     image: fleetbase/fleetbase-api:latest
     volumes:
       - ./api/.env:/fleetbase/api/.env
     environment:
-      ENVIRONMENT: development
+      ENVIRONMENT: local
       DATABASE_URL: "mysql://root@database/fleetbase"
       QUEUE_CONNECTION: redis
       CACHE_DRIVER: redis
@@ -89,6 +93,7 @@ services:
       - database
       - cache
       - queue
+    platform: linux/amd64
 
   httpd:
     build:
@@ -98,3 +103,6 @@ services:
       - "8000:80"
     depends_on:
       - application
+
+volumes:
+  fleetbase_db_data:
