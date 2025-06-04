@@ -46,3 +46,32 @@ builds/osx/frankenphp
 *.dll
 *.so
 *.dylib
+
+# Terraform secrets
+*terraform.tfvars
+*.terraform*
+
+# Terraform state files
+*.tfstate
+*.tfstate.*
+*.tfstate.backup
+*.tfstate.lock.info
+
+# Crash log files
+crash.log
+crash.*.log
+
+# Terraform plan output
+*.tfplan
+
+# Variable files with potential sensitive data
+*.auto.tfvars
+*.auto.tfvars.json
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# CLI configuration files
+.terraformrc
+terraform.rc

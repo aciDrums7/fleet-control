@@ -1,0 +1,89 @@
+#cloud-config
+package_update: true
+package_upgrade: true
+
+packages:
+  - apt-transport-https
+  - ca-certificates
+  - curl
+  - gnupg
+  - lsb-release
+  - git
+
+runcmd:
+  # Set up Docker repository
+  - curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+  - echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+  
+  # Install Docker
+  - sudo apt-get update
+  - sudo apt-get install -y docker-ce docker-ce-cli containerd.io
+  - sudo systemctl start docker
+  - sudo systemctl enable docker
+  
+  # Add ubuntu user to docker group (adjust if using a different OS)
+  - sudo usermod -aG docker ubuntu
+  
+  # Install Docker Compose
+  - DOCKER_COMPOSE_VERSION=$$(curl -s https://api.github.com/repos/docker/compose/releases/latest | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
+  - sudo curl -L "https://github.com/docker/compose/releases/download/$${DOCKER_COMPOSE_VERSION}/docker-compose-$$(uname -s)-$$(uname -m)" -o /usr/local/bin/docker-compose
+  - sudo chmod +x /usr/local/bin/docker-compose
+  
+  # Create project directory
+  - mkdir -p /home/ubuntu/fleetbase
+  - chown ubuntu:ubuntu /home/ubuntu/fleetbase
+  
+  # Set up swap space (recommended for production instances)
+  - sudo fallocate -l 4G /swapfile
+  - sudo chmod 600 /swapfile
+  - sudo mkswap /swapfile
+  - sudo swapon /swapfile
+  - echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
+  
+  # Set up basic firewall
+  - sudo ufw allow 22/tcp
+  - sudo ufw allow 80/tcp
+  - sudo ufw allow 443/tcp
+  - sudo ufw allow 4200/tcp
+  - sudo ufw --force enable
+
+write_files:
+  - path: /home/ubuntu/fleetbase/README.md
+    permissions: '0644'
+    content: |
+      # Fleetbase OCI Deployment
+      
+      This server has been provisioned with Terraform to host the Fleetbase application.
+      
+      ## Next Steps
+      
+      1. Clone your Fleetbase repository:
+         ```
+         git clone https://github.com/yourusername/fleetbase.git
+         ```
+      
+      2. Set up your environment variables in a docker-compose.override.yml file
+      
+      3. Run docker-compose:
+         ```
+         docker-compose up -d --build
+         ```
+      
+      4. Run the Fleetbase deployment script:
+         ```
+         docker-compose exec application sh -c "cd /fleetbase/api && sh deploy.sh"
+         ```
+
+  - path: /home/ubuntu/fleetbase/.env.example
+    permissions: '0644'
+    content: |
+      # Example environment variables file for Fleetbase
+      APP_ENV=production
+      APP_KEY=base64:YOUR_GENERATED_KEY
+      APP_URL=http://YOUR_INSTANCE_IP
+      CONSOLE_HOST=http://YOUR_INSTANCE_IP:4200
+      DB_HOST=database
+      DB_DATABASE=fleetbase
+      DB_USERNAME=fleetbase
+      DB_PASSWORD=YOUR_STRONG_PASSWORD
+      REDIS_HOST=cache

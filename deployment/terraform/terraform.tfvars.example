@@ -1,0 +1,38 @@
+# Example terraform.tfvars file for Fleetbase OCI deployment
+# Copy this file to terraform.tfvars and modify the values as needed
+
+# OCI Provider Authentication
+tenancy_ocid     = "ocid1.tenancy.oc1..aaaaaaaaexampleuniqueID"
+user_ocid        = "ocid1.user.oc1..aaaaaaaaexampleuniqueID"
+fingerprint      = "xx:xx:xx:xx:xx:xx:xx:xx:xx:xx:xx:xx:xx:xx:xx:xx"
+private_key_path = "~/.oci/oci_api_key.pem"
+region           = "eu-milan-1" # Replace with your preferred region
+
+# Compartment
+compartment_ocid = "ocid1.compartment.oc1..aaaaaaaaexampleuniqueID"
+
+# VCN Configuration
+vcn_display_name = "fleetbase-vcn"
+vcn_cidr_block   = "10.0.0.0/16"
+vcn_dns_label    = "fleetbasevcn"
+
+# Subnet Configuration
+public_subnet_cidr_block   = "10.0.1.0/24"
+public_subnet_display_name = "fleetbase-public-subnet"
+public_subnet_dns_label    = "fleetbasepubsub"
+
+# Compute Instance Configuration
+instance_display_name    = "fleetbase-server"
+instance_shape           = "VM.Standard.A1.Flex" # Oracle's ARM-based Always Free tier
+instance_ocpus           = 2
+instance_memory_in_gbs   = 12
+boot_volume_size_in_gbs  = 100
+
+# ARM-compatible Image OCID - Replace with current value for your region
+# To find the latest ARM image OCIDs, visit:
+# https://docs.oracle.com/en-us/iaas/images/
+instance_image_id        = "ocid1.image.oc1.eu-milan-1.aaaaaaaa...example" # Ubuntu 22.04 ARM64
+
+# SSH Public Key for accessing the instance
+# Replace with the contents of your own public key file
+ssh_public_key           = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQ... your-key-here"
